@@ -54,13 +54,13 @@ const resultDiv = document.getElementById("result");
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(",");
+  const headers = lines[0].split(",").map(h => h.trim());
 
   return lines.slice(1).map(line => {
     const values = line.split(",");
     let obj = {};
     headers.forEach((h, i) => {
-      obj[h.trim()] = (values[i] || "").trim();
+      obj[h] = (values[i] || "").trim();
     });
     return obj;
   });
@@ -71,9 +71,9 @@ fetch(GOOGLE_SHEET_CSV_URL)
   .then(text => {
     const data = parseCSV(text);
 
- const match = data.find(r =>
-  r.SerialNumber?.trim().toUpperCase() === serial?.trim().toUpperCase() &&
-  r.QRToken?.trim().toUpperCase() === token?.trim().toUpperCase()
+const match = data.find(r =>
+  r["SerialNumber"]?.trim() === serial?.trim() &&
+  r["QRToken"]?.trim() === token?.trim()
 );
     const serial = params.get("serial")?.trim();
 const token = params.get("token")?.trim();
