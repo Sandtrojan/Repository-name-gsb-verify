@@ -46,21 +46,29 @@ body {
 const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnoZQdcx_yMEkJGSMZK0nGoC0-vr19IdpZpHZIJh9iV-FRK6ZF026aygSvhn9PwkebXhxcPB-NuE2PX/pub?gid=0&single=true&output=csv";
 
 const params = new URLSearchParams(window.location.search);
-const serial = params.get("serial");
-const token = params.get("token");
+const serial = (params.get("serial") || "").trim().toUpperCase();
+const token = (params.get("token") || "").trim().toUpperCase();
 
 const statusDiv = document.getElementById("status");
 const resultDiv = document.getElementById("result");
 
+function clean(value) {
+  return String(value || "")
+    .replace(/\uFEFF/g, "")
+    .replace(/\r/g, "")
+    .trim()
+    .toUpperCase();
+}
+
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(",").map(h => h.trim());
+  const headers = lines[0].split(",").map(h => clean(h));
 
   return lines.slice(1).map(line => {
     const values = line.split(",");
     let obj = {};
     headers.forEach((h, i) => {
-      obj[h] = (values[i] || "").trim();
+      obj[h] = clean(values[i]);
     });
     return obj;
   });
@@ -71,12 +79,14 @@ fetch(GOOGLE_SHEET_CSV_URL)
   .then(text => {
     const data = parseCSV(text);
 
-const match = data.find(r =>
-  r["SerialNumber"]?.trim() === serial?.trim() &&
-  r["QRToken"]?.trim() === token?.trim()
-);
-    const serial = params.get("serial")?.trim();
-const token = params.get("token")?.trim();
+    console.log("URL Serial:", serial);
+    console.log("URL Token:", token);
+    console.log("Sheet Data:", data);
+
+    const match = data.find(r =>
+      r["SERIALNUMBER"] === serial &&
+      r["QRTOKEN"] === token
+    );
 
     if (!match) {
       statusDiv.textContent = "NOT VERIFIED";
@@ -89,17 +99,19 @@ const token = params.get("token")?.trim();
     statusDiv.className = "status valid";
 
     resultDiv.innerHTML = `
-      Serial: ${match.SerialNumber}<br>
-      Weight: ${match.WeightGrams} g<br>
-      Purity: ${match.Purity}<br>
-      Metal: ${match.Metal}<br>
-      Status: ${match.Status}
+      Serial: ${match.SERIALNUMBER}<br>
+      Weight: ${match.WEIGHTGRAMS} g<br>
+      Purity: ${match.PURITY}<br>
+      Metal: ${match.METAL}<br>
+      Status: ${match.STATUS}
     `;
   })
-  .catch(() => {
+  .catch(error => {
+    console.error(error);
     statusDiv.textContent = "ERROR";
+    statusDiv.className = "status invalid";
+    resultDiv.innerHTML = "Could not load verification database.";
   });
 </script>
-
 </body>
 </html>
