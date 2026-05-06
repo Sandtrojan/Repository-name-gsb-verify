@@ -72,8 +72,9 @@ fetch(GOOGLE_SHEET_CSV_URL)
     const data = parseCSV(text);
 
     const match = data.find(r =>
-      r.SerialNumber === serial && r.QRToken === token
-    );
+  r.SerialNumber?.trim() === serial?.trim() &&
+  r.QRToken?.trim() === token?.trim()
+);
 
     if (!match) {
       statusDiv.textContent = "NOT VERIFIED";
