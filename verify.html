@@ -53,7 +53,7 @@ const statusDiv = document.getElementById("status");
 const resultDiv = document.getElementById("result");
 
 function parseCSV(text) {
-  const lines = text.trim().split("\n");
+  const lines = text.trim().split(/\r?\n/);
   const headers = lines[0].split(",");
 
   return lines.slice(1).map(line => {
@@ -71,10 +71,12 @@ fetch(GOOGLE_SHEET_CSV_URL)
   .then(text => {
     const data = parseCSV(text);
 
-    const match = data.find(r =>
-  r.SerialNumber?.trim() === serial?.trim() &&
-  r.QRToken?.trim() === token?.trim()
+ const match = data.find(r =>
+  r.SerialNumber?.trim().toUpperCase() === serial?.trim().toUpperCase() &&
+  r.QRToken?.trim().toUpperCase() === token?.trim().toUpperCase()
 );
+    const serial = params.get("serial")?.trim();
+const token = params.get("token")?.trim();
 
     if (!match) {
       statusDiv.textContent = "NOT VERIFIED";
