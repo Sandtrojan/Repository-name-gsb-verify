@@ -43,7 +43,7 @@ body {
 </div>
 
 <script>
-const GOOGLE_SHEET_CSV_URL = "const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv";
+const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnoZQdcx_yMEkJGSMZK0nGoC0-vr19IdpZpHZIJh9iV-FRK6ZF026aygSvhn9PwkebXhxcPB-NuE2PX/pub?gid=0&single=true&output=csv";
 
 const params = new URLSearchParams(window.location.search);
 const serial = params.get("serial");
@@ -53,12 +53,15 @@ const statusDiv = document.getElementById("status");
 const resultDiv = document.getElementById("result");
 
 function parseCSV(text) {
-  const rows = text.split("\\n").map(r => r.split(","));
-  const headers = rows.shift();
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",");
 
-  return rows.map(row => {
+  return lines.slice(1).map(line => {
+    const values = line.split(",");
     let obj = {};
-    headers.forEach((h, i) => obj[h.trim()] = row[i]?.trim());
+    headers.forEach((h, i) => {
+      obj[h.trim()] = (values[i] || "").trim();
+    });
     return obj;
   });
 }
